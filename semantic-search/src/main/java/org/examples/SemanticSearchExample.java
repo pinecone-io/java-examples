@@ -28,7 +28,7 @@ public class SemanticSearchExample {
         String openAiApiKey = envVarChecker.getOpenAiApiKey();
 
         // Declare an index name
-        String indexName = "java-test-index";
+        String indexName = "java-test-index2";
 
         // Set up Pinecone access:
         PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
@@ -43,7 +43,7 @@ public class SemanticSearchExample {
             // Wait for index to be ready for future operations
             Thread.sleep(10000);
         } else {
-            logger.info("Index" + indexName + " already exists, moving on...");
+            logger.info("Index " + indexName + " already exists, moving on...");
         }
 
         // Grab data from HuggingFace
@@ -58,7 +58,7 @@ public class SemanticSearchExample {
         int batchSize = 10;
 
         // Embed data and upsert it into PineconeWrapper
-        if (pinecone.indexEmpty()) {
+        if (pinecone.indexFull()) {
             logger.info("Index is not empty. Skipping upsert process.");
         } else {
             logger.info("Index is empty. Embedding and upserting data...");
@@ -126,7 +126,7 @@ public class SemanticSearchExample {
                     }
                 }
             }
-
+        }
             // Declare sample user query claim
             String userQuery = "Climate change makes snow melt faster.";
 
@@ -134,7 +134,7 @@ public class SemanticSearchExample {
             List<Float> embeddedUserQuery = openAIHandler.returnEmbedding(userQuery);
 
             // Poll index until it's ready for querying
-            while (pinecone.indexEmpty()) {
+            while (!pinecone.indexFull()) {
                 logger.info("Index isn't ready yet. Waiting...");
                 try {
                     Thread.sleep(1000);
@@ -160,4 +160,3 @@ public class SemanticSearchExample {
             pinecone.closePineconeIndexConnection();
         }
     }
-}

@@ -60,7 +60,7 @@ public class PineconeWrapper {
         this.openPineconeConnection().createIndex(indexBlueprint);
     }
 
-    public Boolean indexEmpty(){
+    public Boolean indexFull(){
         int vectorCount =
                 this.pinecone.createIndexConnection(this.indexName).describeIndexStats(null).getTotalVectorCount();
         return vectorCount > 0;
