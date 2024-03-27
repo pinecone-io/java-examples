@@ -5,7 +5,6 @@ import com.google.protobuf.Value;
 import com.theokanning.openai.embedding.Embedding;
 import com.theokanning.openai.embedding.EmbeddingRequest;
 import com.theokanning.openai.embedding.EmbeddingResult;
-import io.pinecone.clients.Index;
 import io.pinecone.unsigned_indices_model.QueryResponseWithUnsignedIndices;
 import io.pinecone.unsigned_indices_model.SparseValuesWithUnsignedIndices;
 import io.pinecone.unsigned_indices_model.VectorWithUnsignedIndices;
@@ -31,17 +30,16 @@ public class SemanticSearchExample {
         // Declare an index name
         String indexName = "java-test-index";
 
-        // Make necessary connections:
-        // PineconeWrapper:
-        PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
-        io.pinecone.clients.Pinecone pineconeSvc = pinecone.openPineconeConnection();
-        // OpenAIHandler embedding service:
+        // Set up Pinecone access:
+        PineconeWrapper pineconeHandler = new PineconeWrapper(pineconeApiKey, indexName);
+
+        // Set up OpenAI access
         OpenAIHandler openAIHandler = new OpenAIHandler(openAiApiKey);
 
         // Check if index already exists, if not build it:
-        if (pinecone.confirmIndexExists(pineconeSvc)) {
+        if (pineconeHandler.confirmIndexExists()) {
             logger.info("Creating index " + indexName);
-            pinecone.buildServerlessIndex();
+            pineconeHandler.buildServerlessIndex();
             // Wait for index to be ready for future operations
             Thread.sleep(10000);
         } else {
@@ -56,14 +54,11 @@ public class SemanticSearchExample {
         // Extract text data from table that you want to vectorize
         List<String> claimsToEmbed = huggingFaceDataset.extract();
 
-        // Connect to PineconeWrapper index
-        Index pineconeIndex = pinecone.openPineconeIndexConnection();
-
         // Set batch size for embedding and upserting
-        Integer batchSize = 10;
+        int batchSize = 10;
 
         // Embed data and upsert it into PineconeWrapper
-        if (pineconeIndex.describeIndexStats(null).getTotalVectorCount() > 0) {
+        if (pineconeHandler.indexEmpty()) {
             logger.info("Index is not empty. Skipping upsert process.");
         } else {
             logger.info("Index is empty. Embedding and upserting data...");
@@ -80,7 +75,7 @@ public class SemanticSearchExample {
                 List<Embedding> batchOfEmbeddings = batchEmbeddingResult.getData();  // this is 5 embeddings
 
                 // Create list to hold object you will index into PineconeWrapper
-                List<VectorWithUnsignedIndices> objectsToIndex = new ArrayList<VectorWithUnsignedIndices>();
+                List<VectorWithUnsignedIndices> objectsToIndex = new ArrayList<>();
 
                 // For each embedding in the batch, create a unique ID and metadata payload to pair with it
                 for (int j = 0; j < batchOfEmbeddings.size(); j++) {
@@ -122,7 +117,7 @@ public class SemanticSearchExample {
                 boolean success = false;
                 while (!success && maxRetries > 0) {
                     try {
-                        pineconeIndex.upsert(objectsToIndex, "test-namespace");
+                        pineconeHandler.upsert(objectsToIndex, "test-namespace");
                         success = true;
                     } catch (io.grpc.StatusRuntimeException e) {
                         logger.info("Index isn't ready yet, retrying...");
@@ -139,7 +134,7 @@ public class SemanticSearchExample {
             List<Float> embeddedUserQuery = openAIHandler.returnEmbedding(userQuery);
 
             // Poll index until it's ready for querying
-            while (pineconeIndex.describeIndexStats(null).getTotalVectorCount() == 0) {
+            while (pineconeHandler.indexEmpty()) {
                 logger.info("Index isn't ready yet. Waiting...");
                 try {
                     Thread.sleep(1000);
@@ -148,18 +143,21 @@ public class SemanticSearchExample {
                 }
             }
 
-            // Create metadata filter Struct to only retrieve claims that are supported by the Wiki articles
-            Struct queryFilter = Struct.newBuilder()
-                    .putFields("claimLabel", Value.newBuilder().setNumberValue(0).build())
-                    .build();
-
             // Query PineconeWrapper
-            QueryResponseWithUnsignedIndices response = pineconeIndex.query(5, embeddedUserQuery, null, null, null, "test-namespace",
-                    queryFilter, false, true);
+            QueryResponseWithUnsignedIndices response =
+                    pineconeHandler.query(5,
+                            embeddedUserQuery,
+                            null,
+                            null,
+                            null,
+                            "test-namespace",
+                            pineconeHandler.buildClaimFilter(),  // Filter for claims that are supported by Wikipedia articles
+                            false,
+                            true);
             logger.info("Query responses: " + response.getMatchesList());
 
             // Close connection to PineconeWrapper index
-            pinecone.closePineconeIndexConnection(pineconeIndex);
+            pineconeHandler.closePineconeIndexConnection();
         }
     }
 }
