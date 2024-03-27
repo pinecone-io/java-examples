@@ -1,6 +1,7 @@
 package org.examples;
 
 import io.pinecone.clients.Index;
+import io.pinecone.clients.Pinecone;
 import org.openapitools.client.model.*;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class PineconeWrapper {
 
     // TODO: add closePineconeConnection method
     public io.pinecone.clients.Pinecone openPineconeConnection() {
-        return new io.pinecone.clients.Pinecone(this.apiKey);
+        return new Pinecone.Builder(this.apiKey).build();
     }
 
     public Index openPineconeIndexConnection() {
