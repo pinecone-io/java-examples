@@ -81,7 +81,7 @@ public class PineconeWrapper {
                                                   boolean includeValues,
                                                   boolean includeMetadata) {
         Index index = this.pinecone.createIndexConnection(this.indexName);
-        return index.query(topK, vector, sparseIndices, sparseValues, id, namespace, filter, queryType);
+        return index.query(topK, vector, sparseIndices, sparseValues, id, namespace, filter, includeValues, includeMetadata);
     }
 
     public Struct buildClaimFilter() {
