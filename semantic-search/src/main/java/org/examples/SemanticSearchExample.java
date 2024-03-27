@@ -31,15 +31,15 @@ public class SemanticSearchExample {
         String indexName = "java-test-index";
 
         // Set up Pinecone access:
-        PineconeWrapper pineconeHandler = new PineconeWrapper(pineconeApiKey, indexName);
+        PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
 
         // Set up OpenAI access
         OpenAIHandler openAIHandler = new OpenAIHandler(openAiApiKey);
 
         // Check if index already exists, if not build it:
-        if (pineconeHandler.confirmIndexExists()) {
+        if (pinecone.confirmIndexExists()) {
             logger.info("Creating index " + indexName);
-            pineconeHandler.buildServerlessIndex();
+            pinecone.buildServerlessIndex();
             // Wait for index to be ready for future operations
             Thread.sleep(10000);
         } else {
@@ -58,7 +58,7 @@ public class SemanticSearchExample {
         int batchSize = 10;
 
         // Embed data and upsert it into PineconeWrapper
-        if (pineconeHandler.indexEmpty()) {
+        if (pinecone.indexEmpty()) {
             logger.info("Index is not empty. Skipping upsert process.");
         } else {
             logger.info("Index is empty. Embedding and upserting data...");
@@ -117,7 +117,7 @@ public class SemanticSearchExample {
                 boolean success = false;
                 while (!success && maxRetries > 0) {
                     try {
-                        pineconeHandler.upsert(objectsToIndex, "test-namespace");
+                        pinecone.upsert(objectsToIndex, "test-namespace");
                         success = true;
                     } catch (io.grpc.StatusRuntimeException e) {
                         logger.info("Index isn't ready yet, retrying...");
@@ -134,7 +134,7 @@ public class SemanticSearchExample {
             List<Float> embeddedUserQuery = openAIHandler.returnEmbedding(userQuery);
 
             // Poll index until it's ready for querying
-            while (pineconeHandler.indexEmpty()) {
+            while (pinecone.indexEmpty()) {
                 logger.info("Index isn't ready yet. Waiting...");
                 try {
                     Thread.sleep(1000);
@@ -145,19 +145,19 @@ public class SemanticSearchExample {
 
             // Query PineconeWrapper
             QueryResponseWithUnsignedIndices response =
-                    pineconeHandler.query(5,
+                    pinecone.query(5,
                             embeddedUserQuery,
                             null,
                             null,
                             null,
                             "test-namespace",
-                            pineconeHandler.buildClaimFilter(),  // Filter for claims that are supported by Wikipedia articles
+                            pinecone.buildClaimFilter(),  // Filter for claims that are supported by Wikipedia articles
                             false,
                             true);
             logger.info("Query responses: " + response.getMatchesList());
 
             // Close connection to PineconeWrapper index
-            pineconeHandler.closePineconeIndexConnection();
+            pinecone.closePineconeIndexConnection();
         }
     }
 }
