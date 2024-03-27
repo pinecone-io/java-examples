@@ -36,7 +36,7 @@ public class SemanticSearchExample {
         PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
         io.pinecone.clients.Pinecone pineconeSvc = pinecone.openPineconeConnection();
         // OpenAIHandler embedding service:
-        OpenAIHandler openAI = new OpenAIHandler(openAiApiKey);
+        OpenAIHandler openAIHandler = new OpenAIHandler(openAiApiKey);
 
         // Check if index already exists, if not build it:
         if (pinecone.confirmIndexExists(pineconeSvc)) {
@@ -73,9 +73,9 @@ public class SemanticSearchExample {
                 // Create a sublist of claims where sublist.size() <= batchSize
                 List<String> batch = claimsToEmbed.subList(i, Math.min(i + batchSize, claimsToEmbed.size()));
                 // Create an embedding request for all items in the batch
-                EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(openAI.embeddingModel, batch, null);
+                EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(openAIHandler.embeddingModel, batch, null);
                 // Generate embeddings for all items in the batch
-                EmbeddingResult batchEmbeddingResult = openAI.connect().createEmbeddings(batchEmbeddingRequest);
+                EmbeddingResult batchEmbeddingResult = openAIHandler.connection.createEmbeddings(batchEmbeddingRequest);
                 // Grab embedding values for all items in the batch
                 List<Embedding> batchOfEmbeddings = batchEmbeddingResult.getData();  // this is 5 embeddings
 
@@ -136,7 +136,7 @@ public class SemanticSearchExample {
             String userQuery = "Climate change makes snow melt faster.";
 
             // Embed user claim
-            List<Float> embeddedUserQuery = openAI.returnEmbedding(userQuery);
+            List<Float> embeddedUserQuery = openAIHandler.returnEmbedding(userQuery);
 
             // Poll index until it's ready for querying
             while (pineconeIndex.describeIndexStats(null).getTotalVectorCount() == 0) {
@@ -159,7 +159,6 @@ public class SemanticSearchExample {
             logger.info("Query responses: " + response.getMatchesList());
 
             // Close connection to PineconeWrapper index
-            // TODO: Add closing of index to PineconeWrapper
             pinecone.closePineconeIndexConnection(pineconeIndex);
         }
     }
