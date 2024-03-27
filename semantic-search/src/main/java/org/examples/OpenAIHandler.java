@@ -10,11 +10,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class EmbeddingsManager {
+// TODO: consider breaking this out into an OpenAIHandler connection class and an OpenAIHandler EmbeddingGenerator class
+public class OpenAIHandler {
     private final String openAIApiKey;
     public String embeddingModel;
 
-    public EmbeddingsManager(String openAIApiKey) {
+    public OpenAIHandler(String openAIApiKey) {
         this.openAIApiKey = openAIApiKey;
         this.embeddingModel = "text-embedding-3-small";
     }

@@ -3,12 +3,12 @@ package org.examples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EnvironmentManager {
-    private static final Logger logger = LoggerFactory.getLogger(EnvironmentManager.class);
+public class LocalEnvironInitializer {
+    private static final Logger logger = LoggerFactory.getLogger(LocalEnvironInitializer.class);
     private String pineconeApiKey;
     private String openAiApiKey;
 
-    public EnvironmentManager() {
+    public LocalEnvironInitializer() {
         checkAndSetEnvVars("PINECONE_API_KEY", "OPENAI_API_KEY");
     }
 

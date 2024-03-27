@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-public class DataManager {
-    private static final Logger logger = LoggerFactory.getLogger(SemanticSearchExample.class);
+public class HuggingFaceDatasetHandler {
+    private static final Logger logger = LoggerFactory.getLogger(HuggingFaceDatasetHandler.class);
     private final String apiUrl;
 
-    public DataManager(String apiUrl) {
+    public HuggingFaceDatasetHandler(String apiUrl) {
         this.apiUrl = apiUrl;
     }
 

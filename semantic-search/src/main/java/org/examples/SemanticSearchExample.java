@@ -6,7 +6,6 @@ import com.theokanning.openai.embedding.Embedding;
 import com.theokanning.openai.embedding.EmbeddingRequest;
 import com.theokanning.openai.embedding.EmbeddingResult;
 import io.pinecone.clients.Index;
-import io.pinecone.clients.Pinecone;
 import io.pinecone.unsigned_indices_model.QueryResponseWithUnsignedIndices;
 import io.pinecone.unsigned_indices_model.SparseValuesWithUnsignedIndices;
 import io.pinecone.unsigned_indices_model.VectorWithUnsignedIndices;
@@ -25,7 +24,7 @@ public class SemanticSearchExample {
     private static final Logger logger = LoggerFactory.getLogger(SemanticSearchExample.class);
 
     public static void main(String[] args) throws InterruptedException {
-        EnvironmentManager envVarChecker = new EnvironmentManager();
+        LocalEnvironInitializer envVarChecker = new LocalEnvironInitializer();
         String pineconeApiKey = envVarChecker.getPineconeApiKey();
         String openAiApiKey = envVarChecker.getOpenAiApiKey();
 
@@ -33,16 +32,16 @@ public class SemanticSearchExample {
         String indexName = "java-test-index";
 
         // Make necessary connections:
-        // Pinecone:
-        PineconeManager pineconeManager = new PineconeManager(pineconeApiKey, indexName);
-        Pinecone pineconeSvc = pineconeManager.connectToPineconeSvc();
-        // OpenAI embedding service:
-        EmbeddingsManager embeddingsManager = new EmbeddingsManager(openAiApiKey);
+        // PineconeWrapper:
+        PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
+        io.pinecone.clients.Pinecone pineconeSvc = pinecone.openPineconeConnection();
+        // OpenAIHandler embedding service:
+        OpenAIHandler openAI = new OpenAIHandler(openAiApiKey);
 
         // Check if index already exists, if not build it:
-        if (pineconeManager.confirmIndexExists(pineconeSvc)) {
+        if (pinecone.confirmIndexExists(pineconeSvc)) {
             logger.info("Creating index " + indexName);
-            pineconeManager.buildIndex();
+            pinecone.buildServerlessIndex();
             // Wait for index to be ready for future operations
             Thread.sleep(10000);
         } else {
@@ -51,19 +50,19 @@ public class SemanticSearchExample {
 
         // Grab data from HuggingFace
         String apiUrl = "https://datasets-server.huggingface.co/rows?dataset=climate_fever&config=default&split=test&offset=0&length=100";
-        DataManager dataManager = new DataManager(apiUrl);
-        JSONArray parsedHfJsonData = dataManager.returnParsedHfData();
+        HuggingFaceDatasetHandler huggingFaceDataset = new HuggingFaceDatasetHandler(apiUrl);
+        JSONArray parsedHfJsonData = huggingFaceDataset.returnParsedHfData();
 
         // Extract text data from table that you want to vectorize
-        List<String> claimsToEmbed = dataManager.extract();
+        List<String> claimsToEmbed = huggingFaceDataset.extract();
 
-        // Connect to Pinecone index
-        Index pineconeIndex = pineconeManager.connectToPineconeIndex();
+        // Connect to PineconeWrapper index
+        Index pineconeIndex = pinecone.openPineconeIndexConnection();
 
         // Set batch size for embedding and upserting
         Integer batchSize = 10;
 
-        // Embed data and upsert it into Pinecone
+        // Embed data and upsert it into PineconeWrapper
         if (pineconeIndex.describeIndexStats(null).getTotalVectorCount() > 0) {
             logger.info("Index is not empty. Skipping upsert process.");
         } else {
@@ -74,13 +73,13 @@ public class SemanticSearchExample {
                 // Create a sublist of claims where sublist.size() <= batchSize
                 List<String> batch = claimsToEmbed.subList(i, Math.min(i + batchSize, claimsToEmbed.size()));
                 // Create an embedding request for all items in the batch
-                EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(embeddingsManager.embeddingModel, batch, null);
+                EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(openAI.embeddingModel, batch, null);
                 // Generate embeddings for all items in the batch
-                EmbeddingResult batchEmbeddingResult = embeddingsManager.connect().createEmbeddings(batchEmbeddingRequest);
+                EmbeddingResult batchEmbeddingResult = openAI.connect().createEmbeddings(batchEmbeddingRequest);
                 // Grab embedding values for all items in the batch
                 List<Embedding> batchOfEmbeddings = batchEmbeddingResult.getData();  // this is 5 embeddings
 
-                // Create list to hold object you will index into Pinecone
+                // Create list to hold object you will index into PineconeWrapper
                 List<VectorWithUnsignedIndices> objectsToIndex = new ArrayList<VectorWithUnsignedIndices>();
 
                 // For each embedding in the batch, create a unique ID and metadata payload to pair with it
@@ -137,7 +136,7 @@ public class SemanticSearchExample {
             String userQuery = "Climate change makes snow melt faster.";
 
             // Embed user claim
-            List<Float> embeddedUserQuery = embeddingsManager.returnEmbedding(userQuery);
+            List<Float> embeddedUserQuery = openAI.returnEmbedding(userQuery);
 
             // Poll index until it's ready for querying
             while (pineconeIndex.describeIndexStats(null).getTotalVectorCount() == 0) {
@@ -154,14 +153,14 @@ public class SemanticSearchExample {
                     .putFields("claimLabel", Value.newBuilder().setNumberValue(0).build())
                     .build();
 
-            // Query Pinecone
+            // Query PineconeWrapper
             QueryResponseWithUnsignedIndices response = pineconeIndex.query(5, embeddedUserQuery, null, null, null, "test-namespace",
                     queryFilter, false, true);
             logger.info("Query responses: " + response.getMatchesList());
 
-            // Close connection to Pinecone index
-            // TODO: Add closing of index to PineconeManager
-            pineconeManager.closePineconeIndex(pineconeIndex);
+            // Close connection to PineconeWrapper index
+            // TODO: Add closing of index to PineconeWrapper
+            pinecone.closePineconeIndexConnection(pineconeIndex);
         }
     }
 }
