@@ -27,7 +27,7 @@ public class EnvironmentManager {
 
         if (!allVarsSet) {
             logger.error("One or more mandatory environment variables are missing. Exiting program.");
-            System.exit(1); // Exit with an error code
+            System.exit(1); // TODO: Handle program exit in SemanticSearchExample class
         } else {
             logger.info("All mandatory environment variables are set.");
         }
