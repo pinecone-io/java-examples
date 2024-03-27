@@ -160,7 +160,6 @@ public class SemanticSearchExample {
             logger.info("Query responses: " + response.getMatchesList());
 
             // Close connection to Pinecone index
-            // TODO: Add closing of index to PineconeManager
             pineconeManager.closePineconeIndex(pineconeIndex);
         }
     }

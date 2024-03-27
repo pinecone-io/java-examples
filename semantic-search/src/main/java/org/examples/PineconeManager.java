@@ -16,7 +16,7 @@ public class PineconeManager {
     }
 
     public Pinecone connectToPineconeSvc() {
-        return new Pinecone(this.apiKey);
+        return new Pinecone.Builder(this.apiKey).build();
     }
 
     public Index connectToPineconeIndex() {

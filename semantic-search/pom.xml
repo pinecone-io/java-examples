@@ -22,7 +22,7 @@
         <dependency>
             <groupId>io.pinecone</groupId>
             <artifactId>pinecone-client</artifactId>
-            <version>1.0.0-rc.1</version>
+            <version>1.0.0-rc.2</version>
         </dependency>
         <dependency>
             <groupId>tech.tablesaw</groupId>
