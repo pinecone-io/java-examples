@@ -20,7 +20,7 @@ public class SemanticSearchExample {
         String openAiApiKey = envVarChecker.getOpenAiApiKey();
 
         // Declare an index name
-        String indexName = "java-test-indexx1";
+        String indexName = "java-test-index";
 
         // Set up Pinecone, OpenAI, and HuggingFace access:
         PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
@@ -39,6 +39,8 @@ public class SemanticSearchExample {
 
         // Extract text data that you want to embed
         List<String> claimsToEmbed = huggingFace.extract();
+
+
 
         // Embed data and upsert it into PineconeWrapper
         if (pinecone.indexFull()) {
@@ -65,56 +67,52 @@ public class SemanticSearchExample {
                     Struct metadata = huggingFace.extractDataForMetadataPayload(i, j, claimsToEmbed);
                     VectorWithUnsignedIndices toIndex = new VectorWithUnsignedIndices(id, embedding, metadata, null);
                     objectsToIndex.add(toIndex);
-//                    System.out.println(metadata);
                 }
-                pinecone.pinecone.deleteIndex(indexName);
-
                 // Poll index for upsert operation
-//                int maxRetries = 3;
-//                boolean success = false;
-//                while (!success && maxRetries > 0) {
-//                    try {
-//                        pinecone.upsert(objectsToIndex, "test-namespace");
-//                        success = true;
-//                    } catch (io.grpc.StatusRuntimeException e) {
-//                        logger.info("Index isn't ready yet, retrying...");
-//                        maxRetries--;
-//                        Thread.sleep(1000);
-//                    }
-//                }
+                int maxRetries = 3;
+                boolean success = false;
+                while (!success && maxRetries > 0) {
+                    try {
+                        pinecone.upsert(objectsToIndex, "test-namespace");
+                        success = true;
+                    } catch (io.grpc.StatusRuntimeException e) {
+                        logger.info("Index isn't ready yet, retrying...");
+                        maxRetries--;
+                        Thread.sleep(1000);
+                    }
+                }
             }
-
         }
             // Declare sample user query claim
-//            String userQuery = "Climate change makes snow melt faster.";
-//
-//            // Embed user claim
-//            List<Float> embeddedUserQuery = openAI.embedOne(userQuery);
-//
-//            // Poll index until it's ready for querying
-//            while (!pinecone.indexFull()) {
-//                logger.info("Index isn't ready yet. Waiting...");
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    logger.error("Thread interrupted while waiting for index to be ready. Continuing...");
-//                }
-//            }
-//
-//            // Query PineconeWrapper
-//            QueryResponseWithUnsignedIndices response =
-//                    pinecone.query(5,
-//                            embeddedUserQuery,
-//                            null,
-//                            null,
-//                            null,
-//                            "test-namespace",
-//                            pinecone.buildClaimFilter(),  // Filter for claims that are supported by Wikipedia articles
-//                            false,
-//                            true);
-//            logger.info("Query responses: " + response.getMatchesList());
-//
-//            // Close connection to PineconeWrapper index
-//            pinecone.closePineconeIndexConnection();
+            String userQuery = "Climate change makes snow melt faster.";
+
+            // Embed user claim
+            List<Float> embeddedUserQuery = openAI.embedOne(userQuery);
+
+            // Poll index until it's ready for querying
+            while (!pinecone.indexFull()) {
+                logger.info("Index isn't ready yet. Waiting...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error("Thread interrupted while waiting for index to be ready. Continuing...");
+                }
+            }
+
+            // Query PineconeWrapper
+            QueryResponseWithUnsignedIndices response =
+                    pinecone.query(5,
+                            embeddedUserQuery,
+                            null,
+                            null,
+                            null,
+                            "test-namespace",
+                            pinecone.buildClaimFilter(),  // Filter for claims that are supported by Wikipedia articles
+                            false,
+                            true);
+            logger.info("Query responses: " + response.getMatchesList());
+
+            // Close connection to PineconeWrapper index
+            pinecone.closePineconeIndexConnection();
         }
     }
