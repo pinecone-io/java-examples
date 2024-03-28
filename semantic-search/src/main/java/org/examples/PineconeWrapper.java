@@ -21,7 +21,7 @@ public class PineconeWrapper {
         this.pinecone = new Pinecone.Builder(this.apiKey).build();
     }
 
-    public Index openPineconeIndexConnection() {
+    private Index openPineconeIndexConnection() {
         return this.pinecone.createIndexConnection(this.indexName);
     }
 
