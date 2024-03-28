@@ -5,7 +5,6 @@ import com.theokanning.openai.embedding.EmbeddingRequest;
 import com.theokanning.openai.embedding.EmbeddingResult;
 import com.theokanning.openai.service.OpenAiService;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +19,7 @@ public class OpenAIHandler {
         this.connection = new OpenAiService(openAIApiKey);
     }
 
-    public List<Float> returnEmbedding(String text) {
+    public List<Float> embedOne(String text) {
         EmbeddingRequest userQueryEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, Collections.singletonList(text),
                 null);
         EmbeddingResult userQueryEmbeddingResult = connection.createEmbeddings(userQueryEmbeddingRequest);
@@ -28,7 +27,7 @@ public class OpenAIHandler {
         return userQueryEmbeddings.get(0).getEmbedding().stream().map(Double::floatValue).collect(Collectors.toList());
     }
 
-    public List<List<Float>> batchEmbed(List<String> strings) {
+    public List<List<Float>> embedMany(List<String> strings) {
         // Create an embedding request for all items in the batch
         EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, strings,
                 null);

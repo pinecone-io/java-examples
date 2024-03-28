@@ -55,7 +55,7 @@ public class SemanticSearchExample {
             for (int i = 0; i < claimsToEmbed.size(); i += batchSize) {
                 // Create a sublist of claims where sublist.size() <= batchSize
                 List<String> batch = claimsToEmbed.subList(i, Math.min(i + batchSize, claimsToEmbed.size()));
-                List<List<Float>> batchOfEmbeddings = openAI.batchEmbed(batch);
+                List<List<Float>> batchOfEmbeddings = openAI.embedMany(batch);
 
                 // Create list to hold object you will index into PineconeWrapper
                 List<VectorWithUnsignedIndices> objectsToIndex = new ArrayList<>();
@@ -87,7 +87,7 @@ public class SemanticSearchExample {
             String userQuery = "Climate change makes snow melt faster.";
 
             // Embed user claim
-            List<Float> embeddedUserQuery = openAI.returnEmbedding(userQuery);
+            List<Float> embeddedUserQuery = openAI.embedOne(userQuery);
 
             // Poll index until it's ready for querying
             while (!pinecone.indexFull()) {
