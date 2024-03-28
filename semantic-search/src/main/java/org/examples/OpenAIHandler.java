@@ -19,14 +19,6 @@ public class OpenAIHandler {
         this.connection = new OpenAiService(openAIApiKey);
     }
 
-    public List<Float> embedOne(String text) {
-        EmbeddingRequest userQueryEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, Collections.singletonList(text),
-                null);
-        EmbeddingResult userQueryEmbeddingResult = connection.createEmbeddings(userQueryEmbeddingRequest);
-        List<Embedding> userQueryEmbeddings = userQueryEmbeddingResult.getData();
-        return userQueryEmbeddings.get(0).getEmbedding().stream().map(Double::floatValue).collect(Collectors.toList());
-    }
-
     public List<List<Float>> embedMany(List<String> strings) {
         // Create an embedding request for all items in the batch
         EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, strings,
