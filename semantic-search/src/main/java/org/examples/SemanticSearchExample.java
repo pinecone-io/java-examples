@@ -24,7 +24,7 @@ public class SemanticSearchExample {
 
         // Set up Pinecone, OpenAI, and HuggingFace access:
         PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
-        OpenAIHandler openAIHandler = new OpenAIHandler(openAiApiKey);
+        OpenAIHandler openAI = new OpenAIHandler(openAiApiKey);
         HuggingFaceHandler huggingFace = new HuggingFaceHandler();
 
         // Check if index already exists, if not build it:
@@ -55,7 +55,7 @@ public class SemanticSearchExample {
             for (int i = 0; i < claimsToEmbed.size(); i += batchSize) {
                 // Create a sublist of claims where sublist.size() <= batchSize
                 List<String> batch = claimsToEmbed.subList(i, Math.min(i + batchSize, claimsToEmbed.size()));
-                List<List<Float>> batchOfEmbeddings = openAIHandler.batchEmbed(batch);
+                List<List<Float>> batchOfEmbeddings = openAI.batchEmbed(batch);
 
                 // Create list to hold object you will index into PineconeWrapper
                 List<VectorWithUnsignedIndices> objectsToIndex = new ArrayList<>();
@@ -87,7 +87,7 @@ public class SemanticSearchExample {
             String userQuery = "Climate change makes snow melt faster.";
 
             // Embed user claim
-            List<Float> embeddedUserQuery = openAIHandler.returnEmbedding(userQuery);
+            List<Float> embeddedUserQuery = openAI.returnEmbedding(userQuery);
 
             // Poll index until it's ready for querying
             while (!pinecone.indexFull()) {

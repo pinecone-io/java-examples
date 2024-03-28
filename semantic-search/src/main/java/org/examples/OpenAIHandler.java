@@ -13,12 +13,11 @@ import java.util.stream.Collectors;
 public class OpenAIHandler {
 
     public String embeddingModel;
-    final OpenAiService connection;
+    private final OpenAiService connection;
 
     public OpenAIHandler(String openAIApiKey) {
         this.embeddingModel = "text-embedding-3-small";
-        OpenAIConnector connector = new OpenAIConnector(openAIApiKey);
-        this.connection = connector.connect();
+        this.connection = new OpenAiService(openAIApiKey);
     }
 
     public List<Float> returnEmbedding(String text) {
