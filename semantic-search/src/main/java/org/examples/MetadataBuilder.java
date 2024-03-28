@@ -6,7 +6,7 @@ import org.json.JSONArray;
 
 
 public class MetadataBuilder {
-    public static Struct buildMetadataStruct(String claimText, String claimID, Integer claimSupported, JSONArray articles){
+    public static Struct build(String claimText, String claimID, Integer claimSupported, JSONArray articles){
         return Struct.newBuilder()
                 .putFields("claimText", Value.newBuilder().setStringValue(claimText).build())
                 .putFields("claimID", Value.newBuilder().setStringValue(claimID).build())

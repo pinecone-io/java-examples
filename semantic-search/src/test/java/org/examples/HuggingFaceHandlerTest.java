@@ -13,6 +13,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class HuggingFaceHandlerTest {
+    // TODO: Wrap this test data in a @before method (w/corresponding @after)?
     // Test data
     private final JSONObject article1 = new JSONObject().put("article", "this is an article");
     private final JSONObject article2 = new JSONObject().put("article", "this is another article");

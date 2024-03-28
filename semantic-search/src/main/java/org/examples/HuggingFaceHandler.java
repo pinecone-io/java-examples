@@ -33,7 +33,7 @@ public class HuggingFaceHandler {
         String claimID = parsedHfJsonData.getJSONObject(i + j).get("claimID").toString();
         JSONArray articles = parsedHfJsonData.getJSONObject(i + j).getJSONArray("articleTitles");
         Integer claimSupported = (Integer) parsedHfJsonData.getJSONObject(i + j).get("claimLabel");
-        return MetadataBuilder.buildMetadataStruct(claimText, claimID, claimSupported, articles);
+        return MetadataBuilder.build(claimText, claimID, claimSupported, articles);
     }
 
     public List<String> extract() {
