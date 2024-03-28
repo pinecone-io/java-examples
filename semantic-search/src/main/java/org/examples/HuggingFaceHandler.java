@@ -24,7 +24,6 @@ public class HuggingFaceHandler {
 
     private JSONArray returnParsedData() {
         JSONObject hFAcquisition = this.returnHfData();
-        System.out.println("!!" + hFAcquisition);
         return this.returnParsedHFData(hFAcquisition);
     }
 
