@@ -22,21 +22,20 @@ public class HuggingFaceHandler {
         this.apiUrl = "https://datasets-server.huggingface.co/rows?dataset=climate_fever&config=default&split=test&offset=0&length=100";
     }
 
-    public JSONArray returnParsedData() {
+    private JSONArray returnParsedData() {
         JSONObject hFAcquisition = this.returnHfData();
+        System.out.println("!!" + hFAcquisition);
         return this.returnParsedHFData(hFAcquisition);
     }
 
     public Struct extractDataForMetadataPayload(int i, int j, List<String> claimsToEmbed){
         JSONArray parsedHfJsonData = this.returnParsedData();
-        String randomUUIDString = UUID.randomUUID().toString();
         String claimText = claimsToEmbed.get(i + j);
         String claimID = parsedHfJsonData.getJSONObject(i + j).get("claimID").toString();
         JSONArray articles = parsedHfJsonData.getJSONObject(i + j).getJSONArray("articleTitles");
         Integer claimSupported = (Integer) parsedHfJsonData.getJSONObject(i + j).get("claimLabel");
         return MetadataBuilder.buildMetadataStruct(claimText, claimID, claimSupported, articles);
     }
-
 
     public List<String> extract() {
         List<String> extractedData = new ArrayList<>();
@@ -48,7 +47,7 @@ public class HuggingFaceHandler {
         return extractedData;
     }
 
-    public JSONObject returnHfData() {
+    private JSONObject returnHfData() {
         try {
             return this.query();
         } catch (IOException e) {
@@ -57,7 +56,7 @@ public class HuggingFaceHandler {
         }
     }
 
-    public JSONObject query() throws IOException {
+    private JSONObject query() throws IOException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpGet request = new HttpGet(this.apiUrl);
             try (CloseableHttpResponse response = httpClient.execute(request)) {
@@ -67,10 +66,11 @@ public class HuggingFaceHandler {
         }
     }
 
-    public JSONArray returnParsedHFData(JSONObject hfData) {
+    JSONArray returnParsedHFData(JSONObject hfData) {
         JSONArray hFDataRows = hfData.getJSONArray("rows");
 
         JSONArray parsedData = new JSONArray();
+
         hFDataRows.forEach(r -> {
             JSONObject row = (JSONObject) r;
             JSONObject rowData = row.getJSONObject("row");
@@ -96,5 +96,4 @@ public class HuggingFaceHandler {
         });
         return parsedData;
     }
-
 }
