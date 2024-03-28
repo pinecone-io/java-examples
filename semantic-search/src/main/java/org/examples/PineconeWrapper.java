@@ -18,12 +18,9 @@ public class PineconeWrapper {
     public PineconeWrapper(String apiKey, String indexName) {
         this.apiKey = apiKey;
         this.indexName = indexName;
-        Pinecone pineconeSvc = new Pinecone.Builder(this.apiKey).build();
-        this.pinecone = pineconeSvc;
-//        Index pineconeIndex = pineconeSvc.createIndexConnection(this.indexName);
+        this.pinecone = new Pinecone.Builder(this.apiKey).build();
     }
 
-    // TODO: add closePineconeConnection method
     public Pinecone openPineconeConnection() {
         return new Pinecone.Builder(this.apiKey).build();
     }
@@ -61,14 +58,17 @@ public class PineconeWrapper {
     }
 
     public Boolean indexFull(){
-        int vectorCount =
-                this.pinecone.createIndexConnection(this.indexName).describeIndexStats(null).getTotalVectorCount();
-        return vectorCount > 0;
+        try (Index index = this.openPineconeIndexConnection()) {
+            int vectorCount;
+            vectorCount = index.describeIndexStats(null).getTotalVectorCount();
+            return vectorCount > 0;
+        }
     }
 
     public void upsert(List<VectorWithUnsignedIndices> objs, String namespace) {
-        Index index = this.pinecone.createIndexConnection(this.indexName);
-        index.upsert(objs, namespace);
+        try (Index index = this.openPineconeIndexConnection()) {
+            index.upsert(objs, namespace);
+        }
     }
 
     public QueryResponseWithUnsignedIndices query(int topK,
@@ -80,8 +80,9 @@ public class PineconeWrapper {
                                                   Struct filter,
                                                   boolean includeValues,
                                                   boolean includeMetadata) {
-        Index index = this.pinecone.createIndexConnection(this.indexName);
-        return index.query(topK, vector, sparseIndices, sparseValues, id, namespace, filter, includeValues, includeMetadata);
+        try (Index index = this.openPineconeIndexConnection()) {
+            return index.query(topK, vector, sparseIndices, sparseValues, id, namespace, filter, includeValues, includeMetadata);
+        }
     }
 
     public Struct buildClaimFilter() {

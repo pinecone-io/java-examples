@@ -29,14 +29,20 @@ public class OpenAIHandler {
         return userQueryEmbeddings.get(0).getEmbedding().stream().map(Double::floatValue).collect(Collectors.toList());
     }
 
-    public List<Embedding> batchEmbeddings(Integer batchSize, List<String> embeddingsList) {
-        List<Embedding> allEmbeddings = new ArrayList<>();
-        for (int i = 0; i < embeddingsList.size(); i += batchSize) {
-            List<String> batch = embeddingsList.subList(i, Math.min(i + batchSize, embeddingsList.size()));
-            EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, batch, null);
-            EmbeddingResult batchEmbeddingResult = this.connection.createEmbeddings(batchEmbeddingRequest);
-            allEmbeddings.addAll(batchEmbeddingResult.getData());
-        }
-        return allEmbeddings;
+    public List<List<Float>> batchEmbed(List<String> strings) {
+        // Create an embedding request for all items in the batch
+        EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, strings,
+                null);
+        // Generate embeddings for all items in the batch
+        EmbeddingResult batchEmbeddingResult = this.connection.createEmbeddings(batchEmbeddingRequest);
+        // Grab embedding values for all items in the batch
+        List<Embedding> embeddings = batchEmbeddingResult.getData();
+        // Turn each Embedding obj into a List of Floats (necessary for Pinecone upsert)
+        return embeddings.stream()
+                .map(embedding -> embedding.getEmbedding().stream()
+                        .map(Double::floatValue)
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList());
     }
+
 }
