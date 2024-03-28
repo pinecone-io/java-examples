@@ -21,12 +21,8 @@ public class PineconeWrapper {
         this.pinecone = new Pinecone.Builder(this.apiKey).build();
     }
 
-    public Pinecone openPineconeConnection() {
-        return new Pinecone.Builder(this.apiKey).build();
-    }
-
     public Index openPineconeIndexConnection() {
-        return this.openPineconeConnection().createIndexConnection(this.indexName);
+        return this.pinecone.createIndexConnection(this.indexName);
     }
 
     public void closePineconeIndexConnection() {
@@ -54,7 +50,7 @@ public class PineconeWrapper {
                 .metric(IndexMetric.COSINE)
                 .dimension(1536)
                 .spec(this.setUpServerlessIndexSpec());
-        this.openPineconeConnection().createIndex(indexBlueprint);
+        this.pinecone.createIndex(indexBlueprint);
     }
 
     public Boolean indexFull(){
@@ -90,5 +86,4 @@ public class PineconeWrapper {
                 .putFields("claimLabel", Value.newBuilder().setNumberValue(0).build())
                 .build();
     }
-
 }
