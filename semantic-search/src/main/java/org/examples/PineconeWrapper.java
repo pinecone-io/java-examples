@@ -11,9 +11,9 @@ import org.openapitools.client.model.*;
 import java.util.List;
 
 public class PineconeWrapper {
+    final Pinecone pinecone;
     private final String apiKey;
     private final String indexName;
-    final Pinecone pinecone;
 
     public PineconeWrapper(String apiKey, String indexName) {
         this.apiKey = apiKey;
@@ -43,7 +43,6 @@ public class PineconeWrapper {
         return new CreateIndexRequestSpec().serverless(serverlessSpec);
     }
 
-    // TODO: add tearDownServerlessIndex method
     public void buildServerlessIndex() {
         CreateIndexRequest indexBlueprint = new CreateIndexRequest()
                 .name(this.indexName)
@@ -53,7 +52,7 @@ public class PineconeWrapper {
         this.pinecone.createIndex(indexBlueprint);
     }
 
-    public Boolean indexFull(){
+    public Boolean indexFull() {
         try (Index index = this.openPineconeIndexConnection()) {
             int vectorCount;
             vectorCount = index.describeIndexStats(null).getTotalVectorCount();
