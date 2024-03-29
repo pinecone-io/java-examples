@@ -6,9 +6,7 @@ import com.theokanning.openai.embedding.EmbeddingResult;
 import com.theokanning.openai.model.Model;
 import com.theokanning.openai.service.OpenAiService;
 
-import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,16 +15,16 @@ public class OpenAIHandler {
     protected String embeddingModel;
     private final OpenAiService connection;
 
-    public OpenAIHandler(String openAIApiKey) {
+    public OpenAIHandler(OpenAiService connection) {
         this.embeddingModel = "text-embedding-3-small";
-        this.connection = new OpenAiService(openAIApiKey);
+        this.connection = connection;
 
         if (!this.listModels().contains(this.embeddingModel)){
             throw new IllegalArgumentException("OpenAI model provided is invalid.");
         }
     }
 
-    private List<String> listModels(){
+    List<String> listModels(){
         List<String> models = new ArrayList<>();
         for (Model model : this.connection.listModels()){
             models.add(model.id);
