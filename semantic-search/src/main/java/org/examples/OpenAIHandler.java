@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class OpenAIHandler {
 
-    public String embeddingModel;
+    protected String embeddingModel;
     private final OpenAiService connection;
 
     public OpenAIHandler(String openAIApiKey) {
@@ -22,7 +22,7 @@ public class OpenAIHandler {
         this.connection = new OpenAiService(openAIApiKey);
 
         if (!this.listModels().contains(this.embeddingModel)){
-            throw new IllegalArgumentException("OpenAI model specified is not valid.");
+            throw new IllegalArgumentException("OpenAI model provided is invalid.");
         }
     }
 
