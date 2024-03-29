@@ -3,8 +3,11 @@ package org.examples;
 import com.theokanning.openai.embedding.Embedding;
 import com.theokanning.openai.embedding.EmbeddingRequest;
 import com.theokanning.openai.embedding.EmbeddingResult;
+import com.theokanning.openai.model.Model;
 import com.theokanning.openai.service.OpenAiService;
 
+import javax.sound.midi.SysexMessage;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +20,18 @@ public class OpenAIHandler {
     public OpenAIHandler(String openAIApiKey) {
         this.embeddingModel = "text-embedding-3-small";
         this.connection = new OpenAiService(openAIApiKey);
+
+        if (!this.listModels().contains(this.embeddingModel)){
+            throw new IllegalArgumentException("OpenAI model specified is not valid.");
+        }
+    }
+
+    private List<String> listModels(){
+        List<String> models = new ArrayList<>();
+        for (Model model : this.connection.listModels()){
+            models.add(model.id);
+        }
+        return models;
     }
 
     public List<List<Float>> embedMany(List<String> strings) {
