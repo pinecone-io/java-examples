@@ -3,23 +3,41 @@ package org.examples;
 import com.theokanning.openai.embedding.Embedding;
 import com.theokanning.openai.embedding.EmbeddingRequest;
 import com.theokanning.openai.embedding.EmbeddingResult;
+import com.theokanning.openai.model.Model;
 import com.theokanning.openai.service.OpenAiService;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class OpenAIHandler {
 
-    public String embeddingModel;
     private final OpenAiService connection;
+    protected String embeddingModel;
 
-    public OpenAIHandler(String openAIApiKey) {
+    public OpenAIHandler(OpenAiService connection) {
         this.embeddingModel = "text-embedding-3-small";
-        this.connection = new OpenAiService(openAIApiKey);
+        this.connection = connection;
+
+        if (!this.listModels().contains(this.embeddingModel)) {
+            throw new IllegalArgumentException("OpenAI model provided is invalid.");
+        }
+    }
+
+    List<String> listModels() {
+        List<String> models = new ArrayList<>();
+        for (Model model : this.connection.listModels()) {
+            models.add(model.id);
+        }
+        return models;
     }
 
     public List<Float> embedOne(String text) {
+        if (text.isEmpty()) {
+            throw new IllegalArgumentException("User query cannot be empty.");
+        }
+
         EmbeddingRequest userQueryEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, Collections.singletonList(text),
                 null);
         EmbeddingResult userQueryEmbeddingResult = connection.createEmbeddings(userQueryEmbeddingRequest);
@@ -28,6 +46,16 @@ public class OpenAIHandler {
     }
 
     public List<List<Float>> embedMany(List<String> strings) {
+        // Raise an exception if the input list is empty
+        if (strings.isEmpty()) {
+            throw new IllegalArgumentException("Input list cannot be empty.");
+        }
+
+        // Raise exception if any item within the input list is empty
+        if (strings.stream().anyMatch(String::isEmpty)) {
+            throw new IllegalArgumentException("Input list cannot contain empty strings.");
+        }
+
         // Create an embedding request for all items in the batch
         EmbeddingRequest batchEmbeddingRequest = new EmbeddingRequest(this.embeddingModel, strings,
                 null);
