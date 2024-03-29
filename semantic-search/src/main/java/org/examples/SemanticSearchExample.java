@@ -1,6 +1,7 @@
 package org.examples;
 
 import com.google.protobuf.Struct;
+import com.theokanning.openai.service.OpenAiService;
 import io.pinecone.unsigned_indices_model.QueryResponseWithUnsignedIndices;
 import io.pinecone.unsigned_indices_model.VectorWithUnsignedIndices;
 import org.slf4j.Logger;
@@ -24,7 +25,8 @@ public class SemanticSearchExample {
 
         // Set up Pinecone, OpenAI, and HuggingFace access:
         PineconeWrapper pinecone = new PineconeWrapper(pineconeApiKey, indexName);
-        OpenAIHandler openAI = new OpenAIHandler(openAiApiKey);
+        OpenAiService openAIConnection = new OpenAiService(openAiApiKey);
+        OpenAIHandler openAI = new OpenAIHandler(openAIConnection);
         HuggingFaceHandler huggingFace = new HuggingFaceHandler();
 
         // Check if index already exists, if not build it:
@@ -39,8 +41,6 @@ public class SemanticSearchExample {
 
         // Extract text data that you want to embed
         List<String> claimsToEmbed = huggingFace.extract();
-
-
 
         // Embed data and upsert it into PineconeWrapper
         if (pinecone.indexFull()) {
@@ -83,36 +83,35 @@ public class SemanticSearchExample {
                 }
             }
         }
-            // Declare sample user query claim
-            String userQuery = "Climate change makes snow melt faster.";
+        // Declare sample user query claim
+        String userQuery = "Forest fires make the world hotter";
 
-            // Embed user claim
-            List<Float> embeddedUserQuery = openAI.embedOne(userQuery);
+        // Embed user claim
+        List<Float> embeddedUserQuery = openAI.embedOne(userQuery);
 
-            // Poll index until it's ready for querying
-            while (!pinecone.indexFull()) {
-                logger.info("Index isn't ready yet. Waiting...");
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error("Thread interrupted while waiting for index to be ready. Continuing...");
-                }
+        // Poll index until it's ready for querying
+        while (!pinecone.indexFull()) {
+            logger.info("Index isn't ready yet. Waiting...");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.error("Thread interrupted while waiting for index to be ready. Continuing...");
             }
-
-            // Query PineconeWrapper
-            QueryResponseWithUnsignedIndices response =
-                    pinecone.query(5,
-                            embeddedUserQuery,
-                            null,
-                            null,
-                            null,
-                            "test-namespace",
-                            pinecone.buildClaimFilter(),  // Filter for claims that are supported by Wikipedia articles
-                            false,
-                            true);
-            logger.info("Query responses: " + response.getMatchesList());
-
-            // Close connection to PineconeWrapper index
-            pinecone.closePineconeIndexConnection();
         }
+        // Query PineconeWrapper
+        QueryResponseWithUnsignedIndices response =
+                pinecone.query(5,
+                        embeddedUserQuery,
+                        null,
+                        null,
+                        null,
+                        "test-namespace",
+                        pinecone.buildClaimFilter(),  // Filter for claims that are supported by Wikipedia articles
+                        false,
+                        true);
+        logger.info("Query responses: " + response.getMatchesList());
+
+        // Close connection to PineconeWrapper index
+        pinecone.closePineconeIndexConnection();
     }
+}
