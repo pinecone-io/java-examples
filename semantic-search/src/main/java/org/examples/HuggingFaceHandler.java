@@ -27,7 +27,7 @@ public class HuggingFaceHandler {
         return this.returnParsedHFData(hFAcquisition);
     }
 
-    public Struct extractDataForMetadataPayload(int i, int j, List<String> claimsToEmbed){
+    public Struct extractDataForMetadataPayload(int i, int j, List<String> claimsToEmbed) {
         JSONArray parsedHfJsonData = this.returnParsedData();
         String claimText = claimsToEmbed.get(i + j);
         String claimID = parsedHfJsonData.getJSONObject(i + j).get("claimID").toString();

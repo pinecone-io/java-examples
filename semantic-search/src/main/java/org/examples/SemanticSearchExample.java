@@ -84,7 +84,7 @@ public class SemanticSearchExample {
             }
         }
         // Declare sample user query claim
-        String userQuery = "fire";
+        String userQuery = "Forest fires make the world hotter";
 
         // Embed user claim
         List<Float> embeddedUserQuery = openAI.embedOne(userQuery);
