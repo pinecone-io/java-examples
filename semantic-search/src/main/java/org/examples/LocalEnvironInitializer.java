@@ -5,45 +5,25 @@ import org.slf4j.LoggerFactory;
 
 public class LocalEnvironInitializer {
     private static final Logger logger = LoggerFactory.getLogger(LocalEnvironInitializer.class);
-    private String pineconeApiKey;
-    private String openAiApiKey;
+    private final String pineconeApiKey;
+    private final String openAiApiKey;
 
+    // Default constructor that implicitly calls the 2nd constructor through the "this" keyword
     public LocalEnvironInitializer() {
-        checkAndSetEnvVars("PINECONE_API_KEY", "OPENAI_API_KEY");
+        this(System.getenv("PINECONE_API_KEY"), System.getenv("OPENAI_API_KEY"));
     }
 
-    private void checkAndSetEnvVars(String... envVars) {
-        boolean allVarsSet = true;
-
-        for (String envVar : envVars) {
-            String value = System.getenv(envVar);
-            if (value == null || value.isEmpty()) {
-                logger.error("Mandatory environment variable {} is not set", envVar);
-                allVarsSet = false;
-            } else {
-                setEnvVarField(envVar, value);
-            }
-        }
-
-        if (!allVarsSet) {
-            logger.error("One or more mandatory environment variables are missing. Exiting program.");
-            System.exit(1); // TODO: Handle program exit in SemanticSearchExample class
-        } else {
-            logger.info("All mandatory environment variables are set.");
-        }
+    // 2nd constructor
+    public LocalEnvironInitializer(String pineconeApiKey, String openAiApiKey) {
+        this.pineconeApiKey = validateEnvVar(pineconeApiKey, "PINECONE_API_KEY");
+        this.openAiApiKey = validateEnvVar(openAiApiKey, "OPENAI_API_KEY");
     }
 
-    private void setEnvVarField(String envVar, String value) {
-        switch (envVar) {
-            case "PINECONE_API_KEY":
-                this.pineconeApiKey = value;
-                break;
-            case "OPENAI_API_KEY":
-                this.openAiApiKey = value;
-                break;
-            default:
-                logger.warn("Unknown environment variable: {}", envVar);
+    private String validateEnvVar(String value, String envVarName) {
+        if (value == null || value.isEmpty()) {
+            throw new IllegalStateException("Mandatory environment variable " + envVarName + " is not set");
         }
+        return value;
     }
 
     public String getPineconeApiKey() {
