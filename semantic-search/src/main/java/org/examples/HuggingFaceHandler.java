@@ -1,5 +1,6 @@
 package org.examples;
 
+import com.google.protobuf.Struct;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -13,22 +14,33 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-public class DataManager {
-    private static final Logger logger = LoggerFactory.getLogger(SemanticSearchExample.class);
+public class HuggingFaceHandler {
+    private static final Logger logger = LoggerFactory.getLogger(HuggingFaceHandler.class);
     private final String apiUrl;
 
-    public DataManager(String apiUrl) {
-        this.apiUrl = apiUrl;
+    public HuggingFaceHandler() {
+        this.apiUrl = "https://datasets-server.huggingface.co/rows?dataset=climate_fever&config=default&split=test&offset=0&length=100";
     }
 
-    public JSONArray returnParsedHfData() {
+    public JSONArray returnParsedData() {
         JSONObject hFAcquisition = this.returnHfData();
         return this.returnParsedHFData(hFAcquisition);
     }
 
+    public Struct extractDataForMetadataPayload(int i, int j, List<String> claimsToEmbed){
+        JSONArray parsedHfJsonData = this.returnParsedData();
+        String randomUUIDString = UUID.randomUUID().toString();
+        String claimText = claimsToEmbed.get(i + j);
+        String claimID = parsedHfJsonData.getJSONObject(i + j).get("claimID").toString();
+        JSONArray articles = parsedHfJsonData.getJSONObject(i + j).getJSONArray("articleTitles");
+        Integer claimSupported = (Integer) parsedHfJsonData.getJSONObject(i + j).get("claimLabel");
+        return MetadataBuilder.buildMetadataStruct(claimText, claimID, claimSupported, articles);
+    }
+
+
     public List<String> extract() {
         List<String> extractedData = new ArrayList<>();
-        this.returnParsedHfData().forEach(r -> {
+        this.returnParsedData().forEach(r -> {
             JSONObject row = (JSONObject) r;
             String claim = ((JSONObject) r).get("claim").toString();
             extractedData.add(claim);
