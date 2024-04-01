@@ -4,6 +4,7 @@ import com.theokanning.openai.embedding.Embedding;
 import com.theokanning.openai.embedding.EmbeddingResult;
 import com.theokanning.openai.model.Model;
 import com.theokanning.openai.service.OpenAiService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -14,24 +15,28 @@ import static org.mockito.Mockito.*;
 
 public class OpenAIHandlerTest {
 
-    @Test
-    public void testListModelsContainsExpectedNumberAndContents() {
-        OpenAiService mockService = mock(OpenAiService.class);
+    private OpenAiService mockService;
+    private OpenAIHandler handler;
+    private Model testModelTwo;
+
+    @BeforeEach
+    public void setUp() {
+        mockService = mock(OpenAiService.class);
 
         Model testModelOne = new Model();
         testModelOne.setId("text-embedding-3-small");
-        Model testModelTwo = new Model();
+        testModelTwo = new Model();
         testModelTwo.setId("text-embedding-3-large");
-
         List<Model> mockModels = Arrays.asList(testModelOne, testModelTwo);
-
         when(mockService.listModels()).thenReturn(mockModels);
 
-        OpenAIHandler handler = new OpenAIHandler(mockService);
-        List<String> modelIds = handler.listModels();
+        handler = new OpenAIHandler(mockService);
+    }
 
-        verify(mockService, times(2)).listModels(); // Called in OpenAIHandler constructor too
-
+    @Test
+    public void testListModelsContainsExpectedNumberAndContents() {
+        List<String> modelIds = this.handler.listModels();
+        verify(this.mockService, times(2)).listModels(); // Called in OpenAIHandler constructor too
         assertEquals(modelIds.size(), 2, "Expected two models in list");
         assertTrue(modelIds.contains("text-embedding-3-small"), "List should contain text-embedding-3-small model");
         assertTrue(modelIds.contains("text-embedding-3-large"), "List should contain text-embedding-3-large model");
@@ -39,50 +44,30 @@ public class OpenAIHandlerTest {
 
     @Test
     public void testListModelsWithIllegalModel() {
-        OpenAiService mockService = mock(OpenAiService.class);
-
         Model testModelOne = new Model();
         testModelOne.setId("blahblah-some-madeup-model");
-        Model testModelTwo = new Model();
-        testModelTwo.setId("text-embedding-3-large");
-
-        List<Model> mockModels = Arrays.asList(testModelOne, testModelTwo);
-
-        when(mockService.listModels()).thenReturn(mockModels);
+        List<Model> mockModels = Arrays.asList(testModelOne, this.testModelTwo);
+        when(this.mockService.listModels()).thenReturn(mockModels);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            OpenAIHandler handler = new OpenAIHandler(mockService);
+            this.handler = new OpenAIHandler(this.mockService);
         }, "OpenAI model provided is invalid.");
     }
 
     @Test
     public void testEmbedManyAndEmbedOne() {
-        // Mock OpenAiService
-        OpenAiService mockService = mock(OpenAiService.class);
-
-        // Make mockService return a valid model, since it's necessary in the Handler's constructor
-        Model testModelOne = new Model();
-        testModelOne.setId("text-embedding-3-small");
-        List<Model> mockModels = Arrays.asList(testModelOne);
-        when(mockService.listModels()).thenReturn(mockModels);
-
-        // Prepare the mocked response for createEmbeddings
         EmbeddingResult mockEmbeddingResult = new EmbeddingResult();
         Embedding mockEmbeddingContents = new Embedding();
         mockEmbeddingContents.setEmbedding(Arrays.asList(1.0, 2.0, 3.0));
         mockEmbeddingResult.setData(Arrays.asList(mockEmbeddingContents));
-        when(mockService.createEmbeddings(any())).thenReturn(mockEmbeddingResult);
-
-        // Create an instance of OpenAIHandler with the mocked service
-        OpenAIHandler handler = new OpenAIHandler(mockService);
+        when(this.mockService.createEmbeddings(any())).thenReturn(mockEmbeddingResult);
 
         // Call embedMany with a list of a single string
-        List<List<Float>> resultEmbedMany = handler.embedMany(Arrays.asList("a single test string"));
-        List<Float> resultEmbedOne = handler.embedOne("a single test string");
-
+        List<List<Float>> resultEmbedMany = this.handler.embedMany(Arrays.asList("a single test string"));
+        List<Float> resultEmbedOne = this.handler.embedOne("a single test string");
 
         // Verify that createEmbeddings was called twice: once for embedMany, once for embedOnce
-        verify(mockService, times(2)).createEmbeddings(any());
+        verify(this.mockService, times(2)).createEmbeddings(any());
 
         // Assert that resultEmbedMany is as expected
         assertEquals(1, resultEmbedMany.size(), "Expected one embedding in the result");
