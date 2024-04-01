@@ -14,8 +14,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HuggingFaceHandlerTest {
-
-
     private List<JSONObject> articles;
     private JSONObject data;
     private JSONObject rowContents1;
