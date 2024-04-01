@@ -12,7 +12,7 @@ about the specific example.
 
 ## Installation
 
-Each example has its own `pom.xml` file and are treated as their own, standalone Maven projects.
+Each example has its own `pom.xml` file and is treated as its own, standalone Maven project.
 
 ## Configuration
 
@@ -21,5 +21,15 @@ at [pinecone.io](https://www.pinecone.io).
 
 ## Indexes
 
-All examples showcase Pinecone serverless indexes. For more information on indexes and index types, please refer to
-the [architecture documentation](https://docs.pinecone.io/reference/architecture/serverless-architecture).
+All examples use Pinecone [serverless indexes](https://docs.pinecone.io/reference/architecture/serverless-architecture).
+
+## Contributing
+
+We welcome contributions from the community! If you wish to contribute an example, please follow these guidelines:
+
+- Ensure your example is well-documented and easy to understand.
+- Include a README with instructions on how to run your example.
+- Include a `pom.xml` file with all necessary dependencies.
+- Make a directory for your example in the root of this repository, following the same layout as `semantic-search`.
+
+PRs will be need to be reviewed and approved by the Pinecone team.
