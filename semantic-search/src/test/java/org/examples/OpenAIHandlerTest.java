@@ -4,7 +4,7 @@ import com.theokanning.openai.embedding.Embedding;
 import com.theokanning.openai.embedding.EmbeddingResult;
 import com.theokanning.openai.model.Model;
 import com.theokanning.openai.service.OpenAiService;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;

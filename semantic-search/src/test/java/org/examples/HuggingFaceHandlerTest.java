@@ -4,43 +4,52 @@ import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HuggingFaceHandlerTest {
-    // TODO: Wrap this test data in a @before method (w/corresponding @after)?
-    // Test data
-    private final JSONObject article1 = new JSONObject().put("article", "this is an article");
-    private final JSONObject article2 = new JSONObject().put("article", "this is another article");
 
-    private final List<JSONObject> articles = Arrays.asList(article1, article2);
 
-    private final JSONObject rowContents1 = new JSONObject()
-            .put("claim", "this is a claim")
-            .put("claim_label", 0)
-            .put("claim_id", "0")
-            .put("evidences", articles);
-    private final JSONObject row1 = new JSONObject().put("row", rowContents1);
-    private final JSONObject rowContents2 = new JSONObject()
-            .put("claim", "this is a different claim")
-            .put("claim_label", 0)
-            .put("claim_id", "1")
-            .put("evidences", articles);
-    private final JSONObject row2 = new JSONObject().put("row", rowContents2);
+    private List<JSONObject> articles;
+    private JSONObject data;
+    private JSONObject rowContents1;
+    private JSONObject rowContents2;
 
-    private final JSONObject data = new JSONObject().put("rows", new JSONArray().put(row1).put(row2));
+    @BeforeEach
+    public void setup() {
+        JSONObject article1 = new JSONObject().put("article", "this is an article");
+        JSONObject article2 = new JSONObject().put("article", "this is another article");
+
+        articles = Arrays.asList(article1, article2);
+
+        rowContents1 = new JSONObject()
+                .put("claim", "this is a claim")
+                .put("claim_label", 0)
+                .put("claim_id", "0")
+                .put("evidences", articles);
+        JSONObject row1 = new JSONObject().put("row", rowContents1);
+        rowContents2 = new JSONObject()
+                .put("claim", "this is a different claim")
+                .put("claim_label", 0)
+                .put("claim_id", "1")
+                .put("evidences", articles);
+        JSONObject row2 = new JSONObject().put("row", rowContents2);
+
+        data = new JSONObject().put("rows", new JSONArray().put(row1).put(row2));
+    }
 
     @Test
     public void testExtract() {
         HuggingFaceHandler huggingFaceHandler = new HuggingFaceHandler();
         List<String> extractedData = huggingFaceHandler.extract();
-        assertNotNull("Extracted data should not be null", extractedData);
-        assertFalse("Extracted data should not be empty", extractedData.isEmpty());
+        assertNotNull(extractedData, "Extracted data should not be null");
+        assertFalse(extractedData.isEmpty(), "Extracted data should not be empty");
     }
 
     @Test
@@ -76,17 +85,19 @@ public class HuggingFaceHandlerTest {
         for (int i = 0; i < claimsSize; i++) {
             for (int j = 0; j < batchOfEmbeddingsSize; j++) {
                 Struct metadata = huggingFaceHandler.extractDataForMetadataPayload(i, j, claims);
-                assertNotNull("Metadata should not be null", metadata);
+                assertNotNull(metadata, "Metadata should not be null");
 
                 Map<String, Value> fieldsMap = metadata.getFieldsMap();
-                assertTrue("Metadata Struct should contain key `claimText`", fieldsMap.containsKey("claimText"));
-                assertTrue("Metadata Struct should contain key `claimLabel`", fieldsMap.containsKey("claimLabel"));
-                assertTrue("Metadata Struct should contain key `claimID`", fieldsMap.containsKey("claimID"));
-                assertTrue("Metadata Struct should contain key `articleTitles`", fieldsMap.containsKey("articleTitles"));
+                assertTrue(fieldsMap.containsKey("claimText"), "Metadata Struct should contain key `claimText`");
+                assertTrue(fieldsMap.containsKey("claimLabel"), "Metadata Struct should contain key `claimLabel`");
+                assertTrue(fieldsMap.containsKey("claimID"), "Metadata Struct should contain key `claimID`");
+                assertTrue(fieldsMap.containsKey("articleTitles"), "Metadata Struct should contain key " +
+                        "`articleTitles`");
 
                 fieldsMap.forEach((key, value) -> {
-                    assertNotNull("Metadata Struct field: " + key + " should not be null", value);
-                    assertFalse("Metadata Struct field: " + key + " should not be empty", value.toString().isEmpty());
+                    assertNotNull(value, "Metadata Struct field: " + key + " should not be null");
+                    assertFalse(value.toString().isEmpty(), "Metadata Struct field: " + key + " should not be empty"
+                    );
                 });
             }
         }
