@@ -23,7 +23,7 @@ The dataset you will be working with ([`"climate_fever"`](https://huggingface.co
 comes from HuggingFace. It contains claims related to climate change that are supported or refuted by a collection of
 Wikipedia articles.
 
-![Preview of HuggingFace data](../../../../img/semantic-search/huggingface-data.png)
+![Preview of HuggingFace data](../img/semantic-search/huggingface-data.png)
 
 ### Working with the data
 
@@ -69,7 +69,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 
 If you are running this example in IntelliJ, you can set these environment variables in the run configuration.
 
-![Example of where to enter environment variables in intellij](../../../../img/semantic-search/env-vars-in-intellij-run-config.png)
+![Example of where to enter environment variables in intellij](../img/semantic-search/env-vars-in-intellij-run-config.png)
 
 ## Testing
 
